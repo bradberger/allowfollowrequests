@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.0-rc4/angular-material.min.css">
+    <style>
+    md-list-item ._md-list-item-inner .md-avatar, md-list-item .md-avatar { height: 40px !important; }
+    </style>
+</head>
+<body ng-app="InstagramApp" ng-cloak layout="column" flex ng-controller="AppCtrl">
+
+    <section flex layout="row" layout-align="center center" ng-if="!loaded">
+        <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+    </section>
+
+    <section layout="column" flex ng-if="loaded && !user">
+        <div layout="row" flex layout-align="center center">
+                <md-card style="max-width: 360px;">
+                    <md-card-content layout="row" layout-align="center center" layout-padding>
+                        <img src="instagram.png" alt="Instagram" style="width: 128px;">
+                        <div layout="column">
+                            <p style="text-align: center;">Sign in using your Google account to access this app.</p>
+                            <md-button class="md-primary md-raised" ng-href="{{ loginURL }}">Sign in</md-button>
+                        </span>
+                    </md-card-content>
+                </md-card>
+        </div>
+    </section>
+
+    <section flex layout="column" ng-if="loaded && user">
+        <md-toolbar>
+            <div class="md-toolbar-tools">
+                <md-icon md-font-icon="material-icons" style="margin-right: 6px;">verified_user</md-icon>
+                <h3 flex>Instagram AutoAccept</h3>
+                <md-button class="md-icon-button" ng-href="{{ logoutURL }}" aria-label="Sign out">
+                    <md-icon md-font-icon="material-icons">exit_to_app</md-icon>
+                </md-button>
+            </div>
+        </md-toolbar>
+        <md-content layout="column" flex ng-if="user">
+            <md-card>
+                <md-subheader>Settings</md-subheader>
+                <md-list>
+                    <md-list-item class="md-2-line">
+                        <md-checkbox ng-checked="enabled" ng-click="toggleEnabled(enabled)"></md-checkbox>
+                        <div class="md-list-item-text">
+                            <h3>Enabled</h3>
+                            <p>Tick the box to accept all follower requests automatically</p>
+                        </div>
+                    </md-list-item>
+                    <md-list-item class="md-2-line" ng-href="/api/v1/authorize">
+                        <md-checkbox ng-checked="accessToken" readonly ng-click="authorize($event)"></md-checkbox>
+                        <div class="md-list-item-text">
+                            <h3>Instagram Authorization</h3>
+                            <p>Click here to authorize the app to connect to your Instagram account.</p>
+                        </div>
+                    </div>
+                </md-list>
+            </md-card>
+            <md-card>
+                <md-subheader>Pending Requests</md-subheader>
+                <md-list>
+                    <md-list-item class="md-2-line" ng-hide="requested.length">
+                        <div class="md-list-item-text">
+                            <h3>No pending requests</h3>
+                            <p>Check back soon</p>
+                        </div>
+                    </md-list-item>
+                    <md-list-item class="md-2-line" ng-repeat="req in requested">
+                        <img class="md-avatar" ng-src="{{ req.profile_picture }}" alt="Profile picture">
+                        <div class="md-list-item-text">
+                            <h3>{{ req.username }}</h3>
+                            <p>{{ req.full_name }}</p>
+                        </div>
+                        <md-checkbox class="md-secondary" ng-click="" ng-show=""></md-checkbox>
+                    </md-list-item>
+                </md-list>
+            </md-card>
+        </md-content>
+    </section>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular-animate.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular-aria.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular-messages.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.0-rc4/angular-material.min.js"></script>
+    <script>
+    (function() {
+
+        "use strict";
+
+        angular.module("InstagramApp", ["ngMaterial"])
+            .controller("AppCtrl", AppCtrl)
+            .config(ConfigCtrl);
+
+        ConfigCtrl.$inject = ["$mdThemingProvider"]
+        function ConfigCtrl($mdThemingProvider) {
+          $mdThemingProvider.theme('default')
+            .primaryPalette("deep-purple")
+            .accentPalette("orange");
+        }
+
+        AppCtrl.$inject = ["$scope", "$http", "$q", "$interval", "$log", "$window"];
+        function AppCtrl($scope, $http, $q, $interval, $log, $window) {
+
+            $scope.user = null;
+            $scope.loginURL = null;
+            $scope.logoutURL = null;
+            $scope.loaded = false;
+            $scope.enabled = false;
+            $scope.toggleEnabled = toggleEnabled;
+            $scope.accessToken = null;
+            $scope.requested = [];
+            $scope.authorize = authorizeInstagram;
+
+            activate();
+
+            function authorizeInstagram($event) {
+                $window.location.href = "/api/v1/authorize";
+            }
+
+            function getUser() {
+                var deferred = $q.defer();
+                $http.get("/api/v1/user").then(function(r) {
+                    $scope.user = r.data;
+                    $scope.logoutURL = r.headers("Logout-URL");
+                    deferred.resolve($scope.user);
+                }, function(r) {
+                    $scope.loginURL = r.data;
+                    deferred.reject(r);
+                });
+                return deferred.promise;
+            }
+
+            function getEnabled() {
+                var deferred = $q.defer();
+                $http.get("/api/v1/autofollow").then(function(r) {
+                    $log.info("autofollow", !!r.data.value);
+                    $scope.enabled = !!r.data.value;
+                    deferred.resolve($scope.enabled);
+                }, function(r) {
+                    deferred.reject(r.data);
+                });
+                return deferred.promise;
+            }
+
+            function toggleEnabled(val) {
+                if ($scope.enabled != !val) {
+                    $scope.enabled = !val;
+                    $log.info("enabled", $scope.enabled);
+                    saveEnabled($scope.enabled);
+                }
+            }
+
+            function saveEnabled(enabled) {
+                if (enabled) {
+                    $http.post("/api/v1/autofollow")
+                } else {
+                    $http.delete("/api/v1/autofollow");
+                }
+            }
+
+            function getRequested() {
+                $http.get("/api/v1/followers/request").then(function(r) {
+                    $scope.requested = r.data;
+                    $log.info("requested", r.data);
+                });
+            }
+
+            function getAccessToken() {
+                var deferred = $q.defer();
+                $http.get("/api/v1/token").then(function(r) {
+                    $scope.accessToken = !!r.data.value;
+                    deferred.resolve(r.data.value);
+                }, deferred.reject);
+                return deferred.promise;
+            }
+
+            function activate() {
+                getUser()
+                    .then(function() {
+                        getEnabled();
+                        getAccessToken();
+                        getRequested();
+                        var requestedInvterval = $interval(getRequested, 60 * 1000);
+                        $scope.$on("$destroy", function() {
+                            $interval.cancel(requestedInterval);
+                        });
+                    })
+                    .finally(function() {
+                        $scope.loaded = true;
+                    });
+            }
+
+        }
+
+    })();
+    </script>
+</body>
+</html>

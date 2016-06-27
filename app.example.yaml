@@ -1,0 +1,39 @@
+application: instagram-autoallow   # defined when you create your app using google dev console
+module: default                    # see https://cloud.google.com/appengine/docs/go/
+version: alpha                     # you can run multiple versions of an app and A/B test
+runtime: go                        # see https://cloud.google.com/appengine/docs/go/
+api_version: go1                   # used when appengine supports different go versions
+
+default_expiration: "1d"           # for CDN serving of static files (use url versioning if long!)
+
+handlers:
+# all the static files that we normally serve ourselves are defined here and Google will handle
+# serving them for us from it's own CDN / edge locations. For all the configuration options see:
+# https://cloud.google.com/appengine/docs/go/config/appconfig#Go_app_yaml_Static_file_handlers
+- url: /
+  mime_type: text/html
+  static_files: public/index.html
+  upload: public/index.html
+
+- url: /instagram.png
+  mime_type: image/png
+  static_files: public/instagram.png
+  upload: public/instagram.png
+
+- url: /favicon.ico
+  mime_type: image/x-icon
+  static_files: public/favicon.ico
+  upload: public/favicon.ico
+
+# cron restricted urls
+- url: /cron/.*
+  script: _go_app
+  login: admin
+
+# finally, we route all other requests to our application. The script name just means "the go app"
+- url: /.*
+  script: _go_app
+
+env_variables:
+    INSTAGRAM_CLIENT_ID: my-instagram-app-client-id
+    INSTAGRAM_CLIENT_SECRET: my-instagram-app-client-secret
