@@ -1,14 +1,17 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" ng-app="InstagramApp" ng-cloak ng-csp>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.0-rc4/angular-material.min.css">
     <style>
     md-list-item ._md-list-item-inner .md-avatar, md-list-item .md-avatar { height: 40px !important; }
+    section, .gray-bg {  background: #eee; }
+    md-card { max-width: 480px; }
+    [ng-cloak], .ng-cloak { display: none; }
     </style>
 </head>
-<body ng-app="InstagramApp" ng-cloak layout="column" flex ng-controller="AppCtrl">
+<body layout="column" flex ng-controller="AppCtrl">
 
     <section flex layout="row" layout-align="center center" ng-if="!loaded">
         <md-progress-circular md-mode="indeterminate"></md-progress-circular>
@@ -18,7 +21,6 @@
         <div layout="row" flex layout-align="center center">
                 <md-card style="max-width: 360px;">
                     <md-card-content layout="row" layout-align="center center" layout-padding>
-                        <img src="instagram.png" alt="Instagram" style="width: 128px;">
                         <div layout="column">
                             <p style="text-align: center;">Sign in using your Google account to access this app.</p>
                             <md-button class="md-primary md-raised" ng-href="{{ loginURL }}">Sign in</md-button>
@@ -28,52 +30,54 @@
         </div>
     </section>
 
-    <section flex layout="column" ng-if="loaded && user">
-        <md-toolbar>
+    <section flex layout="column" ng-if="loaded && user" layout-align="center center">
+        <md-toolbar class="md-whiteframe-4dp">
             <div class="md-toolbar-tools">
-                <md-icon md-font-icon="material-icons" style="margin-right: 6px;">verified_user</md-icon>
-                <h3 flex>Instagram AutoAccept</h3>
+                <md-icon md-font-icon="material-icons" style="margin-right: 6px;">camera</md-icon>
+                <h3 flex>
+                    AutoAccept
+                    <div class="muted" style="font-size: .67em; opacity: .8">Automagically accept Instagram follow requests</div>
+                </h3>
                 <md-button class="md-icon-button" ng-href="{{ logoutURL }}" aria-label="Sign out">
                     <md-icon md-font-icon="material-icons">exit_to_app</md-icon>
                 </md-button>
             </div>
         </md-toolbar>
-        <md-content layout="column" flex ng-if="user">
+        <md-content layout="column" flex ng-if="user" class="gray-bg">
             <md-card>
-                <md-subheader>Settings</md-subheader>
+                <md-subheader class="md-no-sticky">Settings</md-subheader>
                 <md-list>
                     <md-list-item class="md-2-line">
-                        <md-checkbox ng-checked="enabled" ng-click="toggleEnabled(enabled)"></md-checkbox>
+                        <md-switch ng-checked="enabled" ng-click="toggleEnabled(enabled)"></md-switch>
                         <div class="md-list-item-text">
                             <h3>Enabled</h3>
-                            <p>Tick the box to accept all follower requests automatically</p>
+                            <p>Enable to accept all follower requests automatically</p>
                         </div>
                     </md-list-item>
-                    <md-list-item class="md-2-line" ng-href="/api/v1/authorize">
-                        <md-checkbox ng-checked="accessToken" readonly ng-click="authorize($event)"></md-checkbox>
+                    <md-list-item class="md-2-line md-dense md-long-text" ng-href="/api/v1/authorize">
+                        <md-switch ng-checked="accessToken" readonly ng-click="authorize($event)"></md-switch>
                         <div class="md-list-item-text">
-                            <h3>Instagram Authorization</h3>
-                            <p>Click here to authorize the app to connect to your Instagram account.</p>
+                            <h3>Connect Instagram</h3>
+                            <p>Click here to authorize/reauthorize the app to connect to your Instagram account. To disconnect, revoke access via <a href="https://www.instagram.com/accounts/manage_access">instagram.com/accounts/manage_access</a></p>
                         </div>
                     </div>
                 </md-list>
             </md-card>
             <md-card>
-                <md-subheader>Pending Requests</md-subheader>
+                <md-subheader class="md-no-sticky">Pending Requests</md-subheader>
                 <md-list>
-                    <md-list-item class="md-2-line" ng-hide="requested.length">
+                    <md-list-item class="md-2-line md-dense" ng-hide="requested.length">
                         <div class="md-list-item-text">
                             <h3>No pending requests</h3>
                             <p>Check back soon</p>
                         </div>
                     </md-list-item>
-                    <md-list-item class="md-2-line" ng-repeat="req in requested">
+                    <md-list-item class="md-2-line md-dense" ng-repeat="req in requested">
                         <img class="md-avatar" ng-src="{{ req.profile_picture }}" alt="Profile picture">
                         <div class="md-list-item-text">
                             <h3>{{ req.username }}</h3>
                             <p>{{ req.full_name }}</p>
                         </div>
-                        <md-checkbox class="md-secondary" ng-click="" ng-show=""></md-checkbox>
                     </md-list-item>
                 </md-list>
             </md-card>
@@ -96,8 +100,8 @@
         ConfigCtrl.$inject = ["$mdThemingProvider"]
         function ConfigCtrl($mdThemingProvider) {
           $mdThemingProvider.theme('default')
-            .primaryPalette("deep-purple")
-            .accentPalette("orange");
+            .primaryPalette("teal")
+            .accentPalette("pink");
         }
 
         AppCtrl.$inject = ["$scope", "$http", "$q", "$interval", "$log", "$window"];
