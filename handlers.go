@@ -205,7 +205,6 @@ func userHandler(w http.ResponseWriter, r *http.Request) {
 
 	url, _ := user.LogoutURL(ctx, "/")
 	w.Header().Set("Logout-URL", url)
-
 	if err := enc.Encode(u); err != nil {
 		code := http.StatusInternalServerError
 		http.Error(w, http.StatusText(code), code)

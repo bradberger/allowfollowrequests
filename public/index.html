@@ -7,8 +7,11 @@
     <style>
     md-list-item ._md-list-item-inner .md-avatar, md-list-item .md-avatar { height: 40px !important; }
     section, .gray-bg {  background: #eee; }
-    md-card { max-width: 480px; }
+    md-card, .container { max-width: 480px; }
     [ng-cloak], .ng-cloak { display: none; }
+    .ng-hide { display: none; }
+    .md-32 { font-size: 32px; }
+    .md-warn { color: rgb(255,87,34); }
     </style>
 </head>
 <body layout="column" flex ng-controller="AppCtrl">
@@ -19,14 +22,14 @@
 
     <section layout="column" flex ng-if="loaded && !user">
         <div layout="row" flex layout-align="center center">
-                <md-card style="max-width: 360px;">
-                    <md-card-content layout="row" layout-align="center center" layout-padding>
-                        <div layout="column">
-                            <p style="text-align: center;">Sign in using your Google account to access this app.</p>
-                            <md-button class="md-primary md-raised" ng-href="{{ loginURL }}">Sign in</md-button>
-                        </span>
-                    </md-card-content>
-                </md-card>
+            <md-card style="max-width: 360px;">
+                <md-card-content layout="row" layout-align="center center" layout-padding>
+                    <div layout="column">
+                        <p style="text-align: center;">Sign in using your Google account to access this app.</p>
+                        <md-button class="md-primary md-raised" ng-href="{{ loginURL }}">Sign in</md-button>
+                    </span>
+                </md-card-content>
+            </md-card>
         </div>
     </section>
 
@@ -63,24 +66,38 @@
                     </div>
                 </md-list>
             </md-card>
-            <md-card>
-                <md-subheader class="md-no-sticky">Pending Requests</md-subheader>
-                <md-list>
-                    <md-list-item class="md-2-line md-dense" ng-hide="requested.length">
-                        <div class="md-list-item-text">
-                            <h3>No pending requests</h3>
-                            <p>Check back soon</p>
-                        </div>
-                    </md-list-item>
-                    <md-list-item class="md-2-line md-dense" ng-repeat="req in requested">
-                        <img class="md-avatar" ng-src="{{ req.profile_picture }}" alt="Profile picture">
-                        <div class="md-list-item-text">
-                            <h3>{{ req.username }}</h3>
-                            <p>{{ req.full_name }}</p>
-                        </div>
-                    </md-list-item>
-                </md-list>
-            </md-card>
+            <div class="container md-warn" ng-if="!accessToken" style="" layout="row" layout-padding>
+                <md-icon md-font-icon="material-icons" class="md-warn md-32">warning</md-icon>
+                <span>Connect your Instagram account to allow this app to manage your Instagram follow requests.</span>
+            </div>
+            <section ng-if="accessToken">
+                <div class="container" ng-if="enabled" layout="row" layout-padding>
+                    <md-icon md-font-icon="material-icons" class="md-primary">check_circle</md-icon>
+                    <span>Pending requests are for reference only. They'll be accepted automatically in the next 1-5 minutes.</span>
+                </div>
+                <div class="container md-warn" ng-if="!enabled" style="" layout="row" layout-padding>
+                    <md-icon md-font-icon="material-icons" class="md-warn md-32">warning</md-icon>
+                    <span>Pending requests listed here are for reference. Check the "enable" box above to automatically accept all requests.</span>
+                </div>
+                <md-card>
+                    <md-subheader class="md-no-sticky">Pending Requests</md-subheader>
+                    <md-list>
+                        <md-list-item class="md-2-line md-dense" ng-hide="requested.length">
+                            <div class="md-list-item-text">
+                                <h3>No pending requests</h3>
+                                <p>Check back soon</p>
+                            </div>
+                        </md-list-item>
+                        <md-list-item class="md-2-line md-dense" ng-repeat="req in requested">
+                            <img class="md-avatar" ng-src="{{ req.profile_picture }}" alt="Profile picture">
+                            <div class="md-list-item-text">
+                                <h3>{{ req.username }}</h3>
+                                <p>{{ req.full_name }}</p>
+                            </div>
+                        </md-list-item>
+                    </md-list>
+                </md-card>
+            </section>
         </md-content>
     </section>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.min.js"></script>

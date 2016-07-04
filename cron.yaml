@@ -1,4 +1,4 @@
 cron:
 - description: regular auto-accept check job
   url: /cron/autofollow
-  schedule: every 1 minutes
+  schedule: every 5 minutes
