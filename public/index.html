@@ -39,7 +39,7 @@
                 <md-icon md-font-icon="material-icons" style="margin-right: 6px;">camera</md-icon>
                 <h3 flex>
                     AutoAccept
-                    <div class="muted" style="font-size: .67em; opacity: .8">Automagically accept Instagram follow requests</div>
+                    <div class="muted" style="font-size: .67em; opacity: .8">Automagically accept your Instagram follow requests</div>
                 </h3>
                 <md-button class="md-icon-button" ng-href="{{ logoutURL }}" aria-label="Sign out">
                     <md-icon md-font-icon="material-icons">exit_to_app</md-icon>
@@ -60,15 +60,15 @@
                     <md-list-item class="md-2-line md-dense md-long-text" ng-href="/api/v1/authorize">
                         <md-switch ng-checked="accessToken" readonly ng-click="authorize($event)"></md-switch>
                         <div class="md-list-item-text">
-                            <h3>Connect Instagram</h3>
-                            <p>Click here to authorize/reauthorize the app to connect to your Instagram account. To disconnect, revoke access via <a href="https://www.instagram.com/accounts/manage_access">instagram.com/accounts/manage_access</a></p>
+                            <h3>Connect Account</h3>
+                            <p>Click here to authorize/reauthorize the app to connect to your account. To disconnect, revoke access via <a href="https://www.instagram.com/accounts/manage_access">instagram.com/accounts/manage_access</a></p>
                         </div>
                     </div>
                 </md-list>
             </md-card>
             <div class="container md-warn" ng-if="!accessToken" style="" layout="row" layout-padding>
                 <md-icon md-font-icon="material-icons" class="md-warn md-32">warning</md-icon>
-                <span>Connect your Instagram account to allow this app to manage your Instagram follow requests.</span>
+                <span>Connect your account to allow this app to manage your follow requests.</span>
             </div>
             <section ng-if="accessToken">
                 <div class="container" ng-if="enabled" layout="row" layout-padding>
